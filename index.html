@@ -30,9 +30,11 @@
  .features li {margin:12px 0; list-style:none; font-size:16px;}
  .features li:before {content:"✅ "; margin-right:8px;}
     input, textarea {width:100%; padding:15px; margin:8px 0; border:2px solid #D4AF37; border-radius:8px; font-size:16px;}
-  .order-btn {width:100%; background:#25D366; color:white; padding:18px; border:none; border-radius:8px; font-size:20px; font-weight:700; cursor:pointer; margin-top:10px; text-decoration:none; display:block; text-align:center;}
+ .order-btn {width:100%; background:#25D366; color:white; padding:18px; border:none; border-radius:8px; font-size:20px; font-weight:700; cursor:pointer; margin-top:10px;}
+ .order-btn:disabled {background:#999;}
  .trust {text-align:center; margin-top:25px; font-size:14px; color:#666;}
  .countdown {background:#D4AF37; color:white; padding:10px; text-align:center; font-weight:600; position:sticky; top:0;}
+ .success-msg {display:none; background:#D4EDDA; color:#155724; padding:20px; border-radius:8px; text-align:center; margin-top:20px; font-weight:600; line-height:1.6;}
   </style>
 </head>
 <body>
@@ -70,8 +72,8 @@
 
     <div class="features">
       <h3>কেন এই রিংটি নিবেন?</h3>
-      <li>গোল্ড প্লেটেড - 2 বছর কালার গ্যারান্টি</li>
-      <li>অরিজিনাল আমেরিকান ডায়মন্ড কাট স্টোন</li>
+      <li>18K গোল্ড প্লেটেড - 2 বছর কালার গ্যারান্টি</li>
+      <li>অরিজিনাল আমেরিকান ডায়মন্ড স্টোন</li>
       <li>ফ্রি সাইজ - সব আঙুলে ফিট হবে</li>
       <li>100% Cash on Delivery সারা বাংলাদেশ</li>
       <li>2-3 দিনে হোম ডেলিভারি</li>
@@ -80,10 +82,16 @@
 
     <h3 style="text-align:center; margin:25px 0; color:#D4AF37;">অর্ডার কনফার্ম করুন 👇</h3>
 
-    <input type="text" id="name" placeholder="আপনার নাম">
-    <input type="tel" id="phone" placeholder="মোবাইল নম্বর 01XXXXXXXXX">
-    <textarea id="address" placeholder="সম্পূর্ণ ঠিকানা" rows="3"></textarea>
-    <a href="#" class="order-btn" onclick="sendWhatsApp()">📱 Order Now</a>
+    <form id="orderForm">
+      <input type="text" id="name" placeholder="আপনার নাম" required>
+      <input type="tel" id="phone" placeholder="মোবাইল নম্বর 01XXXXXXXXX" required>
+      <textarea id="address" placeholder="সম্পূর্ণ ঠিকানা" rows="3" required></textarea>
+      <button type="submit" class="order-btn" id="submitBtn">📱 Order Now</button>
+    </form>
+
+    <div class="success-msg" id="successMsg">
+      ✅ আপনার অর্ডারটি কনফার্ম হয়েছে!<br>আমরা 5 মিনিটের মধ্যে আপনাকে কল করে কনফার্ম করব।
+    </div>
 
     <div class="trust">
       <p>🔒 100% নিরাপদ অর্ডার | 🚚 ডেলিভারি: ঢাকা ৳60, বাইরে ৳120</p>
@@ -92,22 +100,38 @@
   </div>
 
   <script>
-    function sendWhatsApp() {
-      var name = document.getElementById('name').value;
-      var phone = document.getElementById('phone').value;
-      var address = document.getElementById('address').value;
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCvqQ3WuO1Sc6CYFLXk6hos_xH-kmZCtT1LofheyrVVFHlQRoUCBl6H19PXuhw3hgl/exec';
 
-      if (name == '' || phone == '' || address == '') {
-        alert('সব তথ্য পূরণ করুন');
-        return false;
-      }
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = 'অর্ডার হচ্ছে...';
 
-      var text = 'Next Shop New Order%0A%0AProduct: Gold Butterfly Ring%0APrice: 1299 Taka%0A%0AName: ' + name + '%0APhone: ' + phone + '%0AAddress: ' + address + '%0A%0APayment: COD';
+      const data = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value
+      };
 
-      var url = 'https://wa.me/8801713273277?text=' + text;
-      window.location.href = url;
-    }
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      })
+    .then(() => {
+        document.getElementById('orderForm').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+      })
+    .catch(err => {
+        alert('দুঃখিত, সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+        btn.disabled = false;
+        btn.innerText = '📱 Order Now';
+      });
+    });
 
+    // স্লাইডার
     let slideIndex = 1;
     showSlides(slideIndex);
     function moveSlide(n) { showSlides(slideIndex += n); }
